@@ -120,7 +120,7 @@ void HrtfFilter::ClockProcess (float* leftData, float* rightData, int bufferLeng
     {
         // write input to delay buffers
         lDelayPointer[lwp] = leftData[n];
-        rDelayPointer[rwp] = rightData[n];
+        rDelayPointer[rwp] = leftData[n];
         
         // filter interpolation
         if (currentAngle != previousAngle)
@@ -149,6 +149,15 @@ void HrtfFilter::ClockProcess (float* leftData, float* rightData, int bufferLeng
             else
                 rtmp += rDelayPointer[rrp - i] * rFilterBuffer[i];
         }
+        // limiter
+        if (ltmp > 1.0f)
+            ltmp = 1.0f;
+        if (ltmp < -1.0f)
+            ltmp = -1.0f;
+        if (rtmp > 1.0f)
+            rtmp = 1.0f;
+        if (rtmp < -1.0f)
+            rtmp = -1.0f;
         
         // write output
         leftData[n] = ltmp;

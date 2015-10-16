@@ -209,25 +209,28 @@ void AuralizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     else
     {
         const int bufferLength = buffer.getNumSamples();
-        if (bufferLength < 128)
+        if (bufferLength < 100)
             return;
         
         // get pointers
         float* inLeft = buffer.getWritePointer(0);
         float* inRight = buffer.getWritePointer(1);
         
+        // pre gain
+        buffer.applyGain(preGain_);
+        
         // downmix stereo input to mono
         if (getNumInputChannels() == 2)
         {
             buffer.addFrom(0, 0, inRight, bufferLength);
-            buffer.applyGain(0.5f * preGain_);
+            buffer.applyGain(0.5f);
         }
         
         // filtering
         filter_.setAngle(angle_);
         filter_.ClockProcess(inLeft, inRight, bufferLength);
         
-        // write output
+        // output gain
         buffer.applyGain(outputGain_);
         
     
