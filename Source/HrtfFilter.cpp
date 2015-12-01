@@ -53,14 +53,15 @@ float HrtfFilter::getAngle ()
 
 float HrtfFilter::interpolate(float upperCoef, float lowerCoef)
 {
-    float coefDifference;
-    float lowerAngle;
+    float coefDifference, lowerAngle, value;
     
     lowerAngle = 10 * floor(currentAngle / 10);
     
     coefDifference = upperCoef - lowerCoef;
     
-    return lowerCoef + (coefDifference / 10.0f) * (currentAngle - lowerAngle);
+    value = lowerCoef + (coefDifference / 10.0f) * (currentAngle - lowerAngle);
+    
+    return value;
 }
 
 float* HrtfFilter::getCoefs(int channel)
@@ -100,13 +101,12 @@ void HrtfFilter::ClockProcess (float* leftData, float* rightData, int bufferLeng
         lDelayDifference = lCurrentDelay - lPreviousDelay;
         rDelayDifference = rCurrentDelay - rPreviousDelay;
     
-        lrp -= (int)lDelayDifference + delayBufferLength % delayBufferLength;
+        lrp -= ((int)lDelayDifference + delayBufferLength) % delayBufferLength;
         
-        rrp -= (int)rDelayDifference + delayBufferLength % delayBufferLength;
+        rrp -= ((int)rDelayDifference + delayBufferLength) % delayBufferLength;
     }
     
     // filter vectors
-    
     float *lLowerHrtf = hrtfBuffer.getFilter(0, (int)currentAngle/10);
     float *rLowerHrtf = hrtfBuffer.getFilter(1, (int)currentAngle/10);
     float *lUpperHrtf = hrtfBuffer.getFilter(0, (int)(currentAngle/10)+1);
@@ -188,22 +188,3 @@ void HrtfFilter::ClockProcess (float* leftData, float* rightData, int bufferLeng
     rightReadPosition = rrp;
     rightWritePosition = rwp;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

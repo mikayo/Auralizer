@@ -13,6 +13,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "HrtfFilter.h"
+#include "PitchShift.h"
 
 
 //==============================================================================
@@ -73,6 +74,8 @@ public:
     float outputGain_;
     float automation_;
     float bypass_;
+    float invert_;
+    float pitch_;
     
     enum Parameters
     {
@@ -82,6 +85,8 @@ public:
         kOutputGainParam,
         kAutomationParam,
         kBypassParam,
+        kInvertParam,
+        kPitchParam,
         kNumParameters
     };
 

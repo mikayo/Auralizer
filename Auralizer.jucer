@@ -11,6 +11,11 @@
               pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="3.2.0">
   <MAINGROUP id="yKadMh" name="Auralizer">
     <GROUP id="{9FD08F19-EE57-F91B-4B00-DE884A69D74B}" name="Source">
+      <FILE id="RtxXkg" name="PitchShift.h" compile="0" resource="0" file="Source/PitchShift.h"/>
+      <FILE id="SwclNG" name="PitchShift.cpp" compile="1" resource="0" file="Source/PitchShift.cpp"/>
+      <FILE id="Ku26Hx" name="PitchControl.h" compile="0" resource="0" file="Source/PitchControl.h"/>
+      <FILE id="i3oy77" name="PitchControl.cpp" compile="1" resource="0"
+            file="Source/PitchControl.cpp"/>
       <FILE id="ln8ALE" name="HrtfDelay.h" compile="0" resource="0" file="Source/HrtfDelay.h"/>
       <FILE id="MEsn7z" name="HrtfDelay.cpp" compile="1" resource="0" file="Source/HrtfDelay.cpp"/>
       <FILE id="kn2IoR" name="HrtfOpen.h" compile="0" resource="0" file="Source/HrtfOpen.h"/>

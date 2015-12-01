@@ -11,7 +11,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "HrtfFilter.h"
+#include "PitchShift.h"
+#include <iostream>
+#include <math.h>
 
+#define PI 3.14159265
 
 //==============================================================================
 AuralizerAudioProcessor::AuralizerAudioProcessor()
@@ -22,6 +26,8 @@ AuralizerAudioProcessor::AuralizerAudioProcessor()
     outputGain_ = 1.0f;
     automation_ = 0.0f;
     bypass_ = 0.0f;
+    invert_ = 0.0f;
+    pitch_ = 0.0f;
     
     filter_.set();
 }
@@ -57,6 +63,10 @@ float AuralizerAudioProcessor::getParameter (int index)
             return automation_;
         case kBypassParam:
             return bypass_;
+        case kInvertParam:
+            return invert_;
+        case kPitchParam:
+            return pitch_;
         default:
             return 0.0f; // invalid index
     }
@@ -84,6 +94,12 @@ void AuralizerAudioProcessor::setParameter (int index, float newValue)
         case kBypassParam:
             bypass_ = newValue;
             break;
+        case kInvertParam:
+            invert_ = newValue;
+            break;
+        case kPitchParam:
+            pitch_ = newValue;
+            break;
         default:
             return;        
     }
@@ -105,6 +121,10 @@ const String AuralizerAudioProcessor::getParameterName (int index)
             return "Source Automation";
         case kBypassParam:
             return "Bypass";
+        case kInvertParam:
+            return "Invert Direction";
+        case kPitchParam:
+            return "Pitch Shift";
         default:
             return String();  
     }
@@ -202,14 +222,14 @@ void AuralizerAudioProcessor::releaseResources()
 void AuralizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     // check conditions
-    if (getSampleRate()!= 44100)
-        return;
-    else if (bypass_ == 1)
+    if (getSampleRate()!= 44100) // filters are generated for this sample rate
+        return;                  // sample rate conversion could be added in
+    if (bypass_ == 1.0f)         // the future
         return;
     else
     {
         const int bufferLength = buffer.getNumSamples();
-        if (bufferLength < 100)
+        if (bufferLength < 100)  // buffer length must be at least the filter length
             return;
         
         // get pointers
@@ -226,22 +246,88 @@ void AuralizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
             buffer.applyGain(0.5f);
         }
         
-        // filtering
+        // HRTF filtering
         filter_.setAngle(angle_);
         filter_.ClockProcess(inLeft, inRight, bufferLength);
+    
+        // automation control
+        if (automation_ == 1.0f)
+        {
+            // pitch parameters
+            long numSampsToProcess = bufferLength;
+            long fftFrameSize = 128;
+            long osamp = 32;
+            float dl, dr;
+            float shiftLeft, shiftRight;
+            
+            if (invert_ == 1.0f)
+            {
+                // pitch shifting
+                if (pitch_ == 1.0f)
+                {
+                    dl = sqrt(pow((cos(angle_*PI/180)+0.1),2)+pow(sin(angle_*PI/180),2));
+                    dr = sqrt(pow((cos(angle_*PI/180)-0.1),2)+pow(sin(angle_*PI/180),2));
+                    
+                    if (angle_ < 90 || angle_ >= 270)
+                    {
+                        shiftLeft = dl/0.9;
+                        shiftRight = dr/1.1;
+                    }
+                    
+                    else
+                    {
+                        shiftLeft = dl/1.1;
+                        shiftRight = dr/0.9;
+                    }
+                    
+                    smbPitchShift(shiftLeft, numSampsToProcess, fftFrameSize, osamp, (float)getSampleRate(), inLeft, inLeft);
+                    smbPitchShift(shiftRight, numSampsToProcess, fftFrameSize, osamp, (float)getSampleRate(), inRight, inRight);
+                }
+
+                // update angle
+                angle_ -= speed_;
+                if (angle_ < 0)
+                {
+                    angle_ += 359;
+                }
+            }
+            else
+            {
+                // pitch shifting
+                if (pitch_ == 1.0f)
+                {
+                    dl = sqrt(pow((cos(angle_*PI/180)+0.1),2)+pow(sin(angle_*PI/180),2));
+                    dr = sqrt(pow((cos(angle_*PI/180)-0.1),2)+pow(sin(angle_*PI/180),2));
+                    
+                    if (angle_ < 90 || angle_ >= 270)
+                    {
+                        shiftLeft = dl/1.1;
+                        shiftRight = dr/0.9;
+                    }
+                    
+                    else
+                    {
+                        shiftLeft = dl/0.9;
+                        shiftRight = dr/1.1;
+                    }
+                    
+                    smbPitchShift(shiftLeft, numSampsToProcess, fftFrameSize, osamp, (float)getSampleRate(), inLeft, inLeft);
+                    smbPitchShift(shiftRight, numSampsToProcess, fftFrameSize, osamp, (float)getSampleRate(), inRight, inRight);
+                }
+                
+                // update angle
+                if (angle_ + speed_ < 359)
+                    angle_ += speed_;
+                else
+                    angle_ += speed_ - 359;
+            }
+            
+        }
+        
+        // low-pass filter
         
         // output gain
         buffer.applyGain(outputGain_);
-        
-    
-        // automation control
-        if (automation_ == 1)
-        {
-            if (angle_ + speed_ < 359)
-                angle_ += speed_;
-            else
-                angle_ += speed_ - 359;
-        }
     }
 }
 

@@ -14,7 +14,6 @@ public:
     void setAngle (float newAngle);
     float getAngle ();
     float interpolate (float upperCoef, float lowerCoef);
-    int interpolateDelay (float upperDelay, float lowerDelay);
     float *getCoefs (int channel);
     void ClockProcess (float* leftData, float* rightData, int bufferLength);
     

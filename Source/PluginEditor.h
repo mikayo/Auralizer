@@ -36,8 +36,8 @@
                                                                     //[/Comments]
 */
 class AuralizerAudioProcessorEditor  : public AudioProcessorEditor,
-                                       public ButtonListener,
                                        public SliderListener,
+                                       public ButtonListener,
                                        public Timer
 {
 public:
@@ -57,8 +57,8 @@ public:
 
     void paint (Graphics& g);
     void resized();
-    void buttonClicked (Button* buttonThatWasClicked);
     void sliderValueChanged (Slider* sliderThatWasMoved);
+    void buttonClicked (Button* buttonThatWasClicked);
 
 
 
@@ -67,7 +67,6 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<ToggleButton> bypassButton_;
     ScopedPointer<Slider> outputGainSlider_;
     ScopedPointer<Label> titleLabel_;
     ScopedPointer<Slider> preGainSlider_;
@@ -75,9 +74,12 @@ private:
     ScopedPointer<Label> preGainLabel_;
     ScopedPointer<Label> outputGainLabel_;
     ScopedPointer<Label> angleLabel_;
-    ScopedPointer<ToggleButton> automationButton_;
     ScopedPointer<Slider> speedSlider_;
     ScopedPointer<Label> speedLabel_;
+    ScopedPointer<ToggleButton> bypassButton_;
+    ScopedPointer<ToggleButton> automationButton_;
+    ScopedPointer<ToggleButton> invertButton_;
+    ScopedPointer<ToggleButton> pitchButton_;
 
 
     //==============================================================================
